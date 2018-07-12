@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Windows.Forms;
+using System.Windows.Controls;
+using Panel = System.Windows.Forms.Panel;
+using System.Windows.Forms.Integration;
 
 namespace SuperClient
 {
@@ -29,12 +32,12 @@ namespace SuperClient
         [DllImport("user32.dll")]
         public static extern bool ShowWindowAsync(HandleRef hWnd, int nCmdShow);
 
-        public Panel[] Panels;
+        public List<Panel> Panels;
         public int LastUsed = -1;
         public MainWindow()
         {
             InitializeComponent();
-            Panels = new[] {Panel0, Panel1, Panel2};
+            Panels = new List<Panel>();
 
         }
 
@@ -95,8 +98,21 @@ namespace SuperClient
             return process.MainWindowHandle;
         }
 
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void CreatePanel()
         {
+            var tabItem = new TabItem(){Header = new ContentControl()};
+            TabControl.Items.Add(tabItem);
+
+            var windowsFormsHost = new WindowsFormsHost();
+            tabItem.Content = windowsFormsHost;
+
+            Panel panel = new Panel();
+            Panels.Add(panel);
+            windowsFormsHost.Child = panel;
+        }
+        private void AddChild(object sender, System.Windows.RoutedEventArgs e)
+        {
+            CreatePanel();
             LastUsed++;
             TabControl.SelectedIndex = LastUsed;
             IntPtr childHandle = StartChild(LastUsed);

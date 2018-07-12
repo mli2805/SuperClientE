@@ -8,35 +8,14 @@
     <DockPanel>
         <GroupBox DockPanel.Dock="Left" Header="Servers" Width="200">
             <StackPanel Margin="5">
-                <Button Width="100" Height="25" Content="Wrap2" Margin="5" Click="Button_Click"></Button>
+                <Button Width="150" Height="25" Content="Connect server" Margin="5" Click="AddChild"/>
             </StackPanel>
         </GroupBox>
-        <TabControl Name="TabControl">
-            <TabItem Header="Panel0">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top" ></TextBlock>
-                    <WindowsFormsHost Name="WindowsFormsHost0">
-                        <WindowsFormsHost.Child>
-                            <wf:Panel x:Name="Panel0"/>
-                        </WindowsFormsHost.Child>
-                    </WindowsFormsHost>
-                </DockPanel>
+        <DockPanel DockPanel.Dock="Left" Background="Beige">
 
-            </TabItem>
-            <TabItem Header="Panel1">
-                <WindowsFormsHost Name="WindowsFormsHost1">
-                    <WindowsFormsHost.Child>
-                        <wf:Panel x:Name="Panel1"/>
-                    </WindowsFormsHost.Child>
-                </WindowsFormsHost>
-            </TabItem>
-            <TabItem Header="Panel2">
-                <WindowsFormsHost Name="WindowsFormsHost2">
-                    <WindowsFormsHost.Child>
-                        <wf:Panel x:Name="Panel2"/>
-                    </WindowsFormsHost.Child>
-                </WindowsFormsHost>
-            </TabItem>
+        </DockPanel>
+        <TabControl Name="TabControl" Visibility="Visible">
+          
         </TabControl>
 
     </DockPanel>
