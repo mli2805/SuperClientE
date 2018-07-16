@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace SuperClient1.Properties
+namespace SuperClientCa.Properties
 {
 
 

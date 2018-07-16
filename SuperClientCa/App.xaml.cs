@@ -1,4 +1,4 @@
-﻿namespace SuperClient1
+﻿namespace SuperClientCa
 {
     /// <summary>
     /// Interaction logic for App.xaml
