@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Controls;
@@ -8,12 +9,17 @@ using System.Windows.Forms.Integration;
 
 namespace SuperClient
 {
+    public class SomeClass
+    {
+        public string Text { get; set; }
+    }
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
     public partial class MainWindow
     {
         const string ClientFilename = @"c:\VsGitProjects\SuperClientE\LittleClient\bin\Debug\LittleClient";
+        //        const string ClientFilename = @"c:\VsGitProjects\Fibertest\Client\WpfClient\bin\Debug\Iit.Fibertest.Client.exe";
 
         private const int GwlStyle = -16;
         private const int WsBorder = 0x00800000;
@@ -33,43 +39,27 @@ namespace SuperClient
         public static extern bool ShowWindowAsync(HandleRef hWnd, int nCmdShow);
 
         public List<Panel> Panels;
+        public List<Tuple<string, string>> Servers;
         public int LastUsed = -1;
+        public List<Process> Processes;
+
         public MainWindow()
         {
             InitializeComponent();
             Panels = new List<Panel>();
-
+            Servers = new List<Tuple<string, string>>();
+            Servers.Add(new Tuple<string, string>("192.168.96.21", "11840"));
+            Servers.Add(new Tuple<string, string>("172.16.4.105", "11840"));
+            Servers.Add(new Tuple<string, string>("172.16.4.115", "11840"));
+            Servers.Add(new Tuple<string, string>("172.16.4.100", "11840"));
+            Processes = new List<Process>();
         }
 
         private void Window_Loaded(object sender, System.Windows.RoutedEventArgs e)
         {
-//            TabControl.SelectedIndex = 0;
-//            IntPtr childHandle0 = StartChild(0);
-//            // FirstWindowsFormsHost.Child = WrapChildByPanel(childHandle0);
-//            PutChildOnPanel(childHandle0, Panel0);
-//
-//            TabControl.SelectedIndex = 1;
-//            IntPtr childHandle1 = StartChild(1);
-//            //   SecondWindowsFormsHost.Child = WrapChildByPanel(childHandle1);
-//            PutChildOnPanel(childHandle1, Panel1);
-//
-//            TabControl.SelectedIndex = 2;
-//            IntPtr childHandle2 = StartChild(2);
-//            //   SecondWindowsFormsHost.Child = WrapChildByPanel(childHandle1);
-//            PutChildOnPanel(childHandle2, Panel2);
+           
         }
 
-//        private Panel WrapChildByPanel(IntPtr childHandle)
-//        {
-//            Panel panel = new Panel();
-//            int oldStyle = GetWindowLong(childHandle, GwlStyle);
-//            SetWindowLong(childHandle, GwlStyle, (oldStyle | WsChild) & ~WsBorder);
-//            var parentHandle = new HandleRef(null, panel.Handle);
-//            SetParent(new HandleRef(null, childHandle), parentHandle);
-//            var childHandleRef = new HandleRef(null, childHandle);
-//            ShowWindowAsync(childHandleRef, SwShowmaximized);
-//            return panel;
-//        }
 
         private void PutChildOnPanel(IntPtr childHandle, Panel panel)
         {
@@ -81,26 +71,26 @@ namespace SuperClient
             ShowWindowAsync(childHandleRef, SwShowmaximized);
         }
 
-
-
-        private static IntPtr StartChild(int number)
+        private IntPtr StartChild(int number, string serverIp, string serverPort)
         {
             var process = new Process
             {
-                StartInfo =
-                {
+                StartInfo = {
                     FileName = ClientFilename,
-                    Arguments = $"child_#{number}"
+                    Arguments = $"{number} superclient superclient {serverIp} {serverPort}"
                 }
             };
             process.Start();
-            System.Threading.Thread.Sleep(1000);
+            //            var pause = number == 3 ? 45 : 10;
+            var pause = 2;
+            System.Threading.Thread.Sleep(TimeSpan.FromSeconds(pause));
+            Processes.Add(process);
             return process.MainWindowHandle;
         }
 
         private void CreatePanel()
         {
-            var tabItem = new TabItem(){Header = new ContentControl()};
+            var tabItem = new TabItem() { Header = new ContentControl() };
             TabControl.Items.Add(tabItem);
 
             var windowsFormsHost = new WindowsFormsHost();
@@ -115,8 +105,23 @@ namespace SuperClient
             CreatePanel();
             LastUsed++;
             TabControl.SelectedIndex = LastUsed;
-            IntPtr childHandle = StartChild(LastUsed);
+            IntPtr childHandle = StartChild(LastUsed, Servers[LastUsed].Item1, Servers[LastUsed].Item2);
             PutChildOnPanel(childHandle, Panels[LastUsed]);
+        }
+
+        private void AddServer(object sender, System.Windows.RoutedEventArgs e)
+        {
+            var window = new AddServerWindow();
+            window.Show();
+        }
+
+        private void MainWindow_OnClosing(object sender, CancelEventArgs e)
+        {
+            foreach (var process in Processes)
+            {
+                process.CloseMainWindow();
+
+            }
         }
     }
 }
