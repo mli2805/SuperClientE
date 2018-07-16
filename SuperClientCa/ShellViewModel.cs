@@ -12,23 +12,6 @@ namespace SuperClientCa
 {
     public class ShellViewModel : Screen, IShell
     {
-        private const int GwlStyle = -16;
-        private const int WsBorder = 0x00800000;
-        private const int WsChild = 0x40000000;
-        private const int SwShowmaximized = 3;
-
-        [DllImport("user32.dll", SetLastError = true)]
-        private static extern int GetWindowLong(IntPtr hWnd, int nIndex);
-
-        [DllImport("user32.dll")]
-        private static extern int SetWindowLong(IntPtr hWnd, int nIndex, int dwNewLong);
-
-        [DllImport("user32.dll")]
-        private static extern IntPtr SetParent(HandleRef hWnd, HandleRef hWndParent);
-
-        [DllImport("user32.dll")]
-        public static extern bool ShowWindowAsync(HandleRef hWnd, int nCmdShow);
-        
         public ObservableCollection<TabItem> TabItems { get; set; } = new ObservableCollection<TabItem>();
         private int _selectedItemIndex;
 
@@ -48,6 +31,8 @@ namespace SuperClientCa
         public int LastUsed = -1;
         public List<Process> Processes = new List<Process>();
 
+
+
         private ChildStarter _childStarter;
 
         public ShellViewModel()
@@ -61,41 +46,17 @@ namespace SuperClientCa
             _childStarter = new ChildStarter();
         }
 
-
-        private Panel CreatePanel()
+        public void AddChild()
         {
             var tabItem = new TabItem() { Header = new ContentControl() };
             TabItems.Add(tabItem);
-
-            var windowsFormsHost = new WindowsFormsHost();
-            tabItem.Content = windowsFormsHost;
-
-            Panel panel = new Panel();
+            var panel = _childStarter.CreatePanel(tabItem);
             Panels.Add(panel);
-            windowsFormsHost.Child = panel;
-
-            return panel;
-        }
-
-        private void PutChildOnPanel(IntPtr childHandle, Panel panel)
-        {
-            int oldStyle = GetWindowLong(childHandle, GwlStyle);
-            SetWindowLong(childHandle, GwlStyle, (oldStyle | WsChild) & ~WsBorder);
-            var parentHandle = new HandleRef(null, panel.Handle);
-            SetParent(new HandleRef(null, childHandle), parentHandle);
-            var childHandleRef = new HandleRef(null, childHandle);
-            ShowWindowAsync(childHandleRef, SwShowmaximized);
-        }
-
-        public void AddChild()
-        {
-            var panel = CreatePanel();
             LastUsed++;
             SelectedItemIndex = LastUsed;
             var process = _childStarter.StartChild(LastUsed, Servers[LastUsed].Item1, Servers[LastUsed].Item2);
             Processes.Add(process);
-            IntPtr childHandle = process.MainWindowHandle;
-            PutChildOnPanel(childHandle, panel);
+            _childStarter.PutChildOnPanel(process, panel);
         }
 
         public void AddServer()
